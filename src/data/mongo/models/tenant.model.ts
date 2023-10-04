@@ -1,13 +1,20 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-const tenantSchema = new mongoose.Schema(
+export interface TenantSchema extends Document {
+  tenant: string;
+  logo?: string | null;
+}
+
+const tenantSchema = new mongoose.Schema<TenantSchema>(
   {
     tenant: {
       type: String,
+      required: true,
     },
     logo: {
       type: String,
-      nullable: true,
+      default: null,
+      required: false,
     },
   },
   {

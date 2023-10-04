@@ -1,11 +1,21 @@
+import { Document } from "mongoose";
 import { bcryptAdapter } from "../config/bcrypt.adapter";
-import { TenantModel, UserModel } from "../data";
+import { TenantModel, TenantSchema, UserModel } from "../data";
 import { RegisterDTO } from "../models";
 import { CustomError } from "../utils/errors/custom.error";
+import { JwtAdapter } from "../config/jwt.adapter";
 
 const USER_ROLE_DEFAULT = "admin";
 
-export const register = async (userDto: RegisterDTO) => {
+interface RegisterResponse {
+  user: Document<any>;
+  tenant: Document<TenantSchema>;
+  token: string;
+}
+
+export const register = async (
+  userDto: RegisterDTO
+): Promise<RegisterResponse> => {
   const existUser = await UserModel.findOne({ email: userDto.email });
   if (existUser) throw CustomError.badRequest("User already exists");
 
@@ -25,9 +35,14 @@ export const register = async (userDto: RegisterDTO) => {
     await user.save();
     await tenant.save();
 
+    const token = await JwtAdapter.generateToken({ id: user.id });
+
+    if (!token) throw CustomError.internalServer("Error generating token");
+
     return {
-      user: user,
-      tenant: tenant,
+      user,
+      tenant,
+      token,
     };
   } catch (error) {
     throw CustomError.internalServer(`${error}`);
