@@ -33,3 +33,8 @@ export const loginUser = async (req: Request, res: Response) => {
     return handleError(error, res);
   }
 };
+
+export const logoutUser = async (_: Request, res: Response) => {
+  res.clearCookie("token", { expires: new Date() });
+  return res.status(200).json({ message: "Logout successful" });
+};
