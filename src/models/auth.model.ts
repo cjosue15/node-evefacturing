@@ -27,3 +27,17 @@ export class RegisterDTO {
     return [undefined, new RegisterDTO(email, password, tenant, name)];
   }
 }
+
+export class LoginDTO {
+  private constructor(public email: string, public password: string) {}
+
+  static create(object: {
+    [key: string]: any;
+  }): [string | undefined, LoginDTO] {
+    const { email, password } = object;
+
+    // validate here with zod
+
+    return [undefined, new LoginDTO(email, password)];
+  }
+}

@@ -1,15 +1,19 @@
-import { Document } from "mongoose";
 import { bcryptAdapter } from "../config/bcrypt.adapter";
-import { TenantModel, TenantSchema, UserModel } from "../data";
-import { RegisterDTO } from "../models";
-import { CustomError } from "../utils/errors/custom.error";
-import { JwtAdapter } from "../config/jwt.adapter";
+import { TenantModel, TenantSchema, UserModel, UserSchema } from "../data";
+import { LoginDTO, RegisterDTO } from "../models";
+import { CustomError } from "../utils/errors";
+import { JwtAdapter } from "../config";
 
 const USER_ROLE_DEFAULT = "admin";
 
 interface RegisterResponse {
-  user: Document<any>;
-  tenant: Document<TenantSchema>;
+  user: UserSchema;
+  tenant: TenantSchema;
+  token: string;
+}
+
+interface LoginResponse {
+  user: UserSchema;
   token: string;
 }
 
@@ -42,6 +46,33 @@ export const register = async (
     return {
       user,
       tenant,
+      token,
+    };
+  } catch (error) {
+    throw CustomError.internalServer(`${error}`);
+  }
+};
+
+export const login = async (loginDto: LoginDTO): Promise<LoginResponse> => {
+  try {
+    const userFound = await UserModel.findOne({ email: loginDto.email });
+    if (!userFound)
+      throw CustomError.badRequest("Invalid credentials email or password");
+
+    const isMatching = bcryptAdapter.compare(
+      loginDto.password,
+      userFound.password
+    );
+
+    if (!isMatching)
+      throw CustomError.badRequest("Invalid credentials email or password");
+
+    const token = await JwtAdapter.generateToken({ id: userFound.id });
+
+    if (!token) throw CustomError.internalServer("Error generating token");
+
+    return {
+      user: userFound,
       token,
     };
   } catch (error) {

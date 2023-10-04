@@ -1,6 +1,17 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-const userSchema = new mongoose.Schema(
+type Role = "admin" | "user";
+
+export interface UserSchema extends Document {
+  name: string;
+  lastName?: string;
+  dni?: string;
+  email: string;
+  password: string;
+  role: Role;
+}
+
+const userSchema = new mongoose.Schema<UserSchema>(
   {
     name: {
       type: String,
@@ -33,7 +44,6 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
   },
-
   {
     timestamps: true,
   }
