@@ -20,17 +20,16 @@ interface LoginResponse {
 export const register = async (
   userDto: RegisterDTO
 ): Promise<RegisterResponse> => {
-  const existUser = await UserModel.findOne({ email: userDto.email });
-  if (existUser) throw CustomError.badRequest("User already exists");
-
   try {
+    const existUser = await UserModel.findOne({ email: userDto.email });
+    if (existUser) throw CustomError.badRequest("User already exists");
     const tenant = new TenantModel({
       tenant: userDto.tenant,
       logo: null,
     });
     const user = new UserModel({
       ...userDto,
-      tenant: tenant._id,
+      tenant: tenant.id,
       role: USER_ROLE_DEFAULT,
     });
 

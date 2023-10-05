@@ -1,20 +1,27 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
+import { TenantSchema } from "./tenant.model";
 
 type Role = "admin" | "user";
 
 export interface UserSchema extends Document {
   name: string;
-  lastName?: string;
-  dni?: string;
+  tenant: TenantSchema;
   email: string;
   password: string;
   role: Role;
+  lastName?: string;
+  dni?: string;
 }
 
 const userSchema = new mongoose.Schema<UserSchema>(
   {
     name: {
       type: String,
+      required: true,
+    },
+    tenant: {
+      type: Schema.Types.ObjectId,
+      ref: "Tenant",
       required: true,
     },
     lastName: {
