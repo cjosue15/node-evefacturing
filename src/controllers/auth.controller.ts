@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 
-import { login, register } from "../services";
-import { LoginDTO, RegisterDTO } from "../models";
-import { handleError } from "../utils/errors";
+import { login, register } from '../services';
+import { LoginDTO, RegisterDTO } from '../models';
+import { handleError } from '../utils/errors';
 
 export const registerUser = async (request: Request, response: Response) => {
   const [errors, registerDto] = RegisterDTO.create(request.body);
@@ -12,8 +12,8 @@ export const registerUser = async (request: Request, response: Response) => {
   }
 
   try {
-    const data = await register(registerDto);
-    response.cookie("token", data.token);
+    const data = await register(registerDto!);
+    response.cookie('token', data.token);
     return response.json(data);
   } catch (error) {
     return handleError(error, response);
@@ -26,8 +26,8 @@ export const loginUser = async (req: Request, res: Response) => {
   if (error) return res.status(400).json({ error });
 
   try {
-    const data = await login(loginUserDto);
-    res.cookie("token", data.token);
+    const data = await login(loginUserDto!);
+    res.cookie('token', data.token);
     return res.json(data);
   } catch (error) {
     return handleError(error, res);
@@ -35,6 +35,6 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const logoutUser = async (_: Request, res: Response) => {
-  res.clearCookie("token", { expires: new Date() });
-  return res.status(200).json({ message: "Logout successful" });
+  res.clearCookie('token', { expires: new Date() });
+  return res.status(200).json({ message: 'Logout successful' });
 };
