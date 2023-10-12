@@ -2,12 +2,17 @@ import { CustomError, handleErrorInstances } from "../utils/errors";
 import { CategoryDTO } from "../models";
 import { CategoryModel, CategorySchema, UserSchema } from "../data";
 
-const getCategory = async (categoryId: string): Promise<CategorySchema> => {
+const getCategory = async (
+  categoryId: string,
+  user: UserSchema
+): Promise<CategorySchema> => {
   try {
-    const categoryFound = await CategoryModel.findById(categoryId);
+    const categoryFound = await CategoryModel.findById(categoryId).where(
+      "tenant",
+      user.tenant.id
+    );
 
-    if (!categoryFound)
-      throw CustomError.badRequest("Category does not exists");
+    if (!categoryFound) throw CustomError.badRequest("La categoria no existe");
 
     return categoryFound;
   } catch (error) {
@@ -19,9 +24,10 @@ const addCategory = async (categoryDto: CategoryDTO, user: UserSchema) => {
   try {
     const categoryFound = await CategoryModel.findOne({
       name: categoryDto.name,
+      tenant: user.tenant.id,
     });
 
-    if (categoryFound) throw CustomError.badRequest("Category already exists");
+    if (categoryFound) throw CustomError.badRequest("La categoria ya existe");
 
     const category = new CategoryModel({
       ...categoryDto,
@@ -36,7 +42,7 @@ const addCategory = async (categoryDto: CategoryDTO, user: UserSchema) => {
   }
 };
 
-const putCategory = async (category: CategoryDTO) => {
+const putCategory = async (category: CategoryDTO, user: UserSchema) => {
   try {
     const categoryUpdated = await CategoryModel.findByIdAndUpdate(
       category.id,
@@ -48,18 +54,18 @@ const putCategory = async (category: CategoryDTO) => {
       {
         new: true,
       }
-    );
+    ).where("tenant", user.tenant.id);
 
     if (!categoryUpdated)
-      throw CustomError.badRequest("Category does not exists");
+      throw CustomError.badRequest("La categoria no existe");
 
     return categoryUpdated;
   } catch (error) {
-    throw CustomError.internalServer(`${error}`);
+    throw handleErrorInstances(error);
   }
 };
 
-const removeCategory = async (category: CategoryDTO) => {
+const removeCategory = async (category: CategoryDTO, user: UserSchema) => {
   try {
     const categoryDeleted = await CategoryModel.findByIdAndUpdate(
       category.id,
@@ -69,14 +75,14 @@ const removeCategory = async (category: CategoryDTO) => {
       {
         new: true,
       }
-    );
+    ).where("tenant", user.tenant.id);
 
     if (!categoryDeleted)
-      throw CustomError.badRequest("Category does not exists");
+      throw CustomError.badRequest("La categoria no existe");
 
     return categoryDeleted;
   } catch (error) {
-    throw CustomError.internalServer(`${error}`);
+    throw handleErrorInstances(error);
   }
 };
 
@@ -89,7 +95,7 @@ const listCategories = async (tenanId: string): Promise<any[]> => {
 
     return categories;
   } catch (error) {
-    throw CustomError.internalServer(`${error}`);
+    throw handleErrorInstances(error);
   }
 };
 

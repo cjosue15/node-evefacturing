@@ -1,7 +1,8 @@
+import { Request } from "express";
 import { bcryptAdapter } from "../config/bcrypt.adapter";
 import { TenantModel, TenantSchema, UserModel, UserSchema } from "../data";
 import { LoginDTO, RegisterDTO } from "../models";
-import { CustomError } from "../utils/errors";
+import { CustomError, handleErrorInstances } from "../utils/errors";
 import { JwtAdapter } from "../config";
 
 const USER_ROLE_DEFAULT = "admin";
@@ -17,9 +18,7 @@ interface LoginResponse {
   token: string;
 }
 
-export const register = async (
-  userDto: RegisterDTO
-): Promise<RegisterResponse> => {
+const register = async (userDto: RegisterDTO): Promise<RegisterResponse> => {
   try {
     const existUser = await UserModel.findOne({ email: userDto.email });
     if (existUser) throw CustomError.badRequest("User already exists");
@@ -48,11 +47,11 @@ export const register = async (
       token,
     };
   } catch (error) {
-    throw CustomError.internalServer(`${error}`);
+    throw handleErrorInstances(error);
   }
 };
 
-export const login = async (loginDto: LoginDTO): Promise<LoginResponse> => {
+const login = async (loginDto: LoginDTO): Promise<LoginResponse> => {
   try {
     const userFound = await UserModel.findOne({ email: loginDto.email });
     if (!userFound)
@@ -75,6 +74,16 @@ export const login = async (loginDto: LoginDTO): Promise<LoginResponse> => {
       token,
     };
   } catch (error) {
-    throw CustomError.internalServer(`${error}`);
+    throw handleErrorInstances(error);
   }
+};
+
+const getCurrentUser = (request: Request): UserSchema => {
+  return request.body.user as UserSchema;
+};
+
+export const authService = {
+  register,
+  login,
+  getCurrentUser,
 };
