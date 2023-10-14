@@ -1,5 +1,6 @@
-import mongoose, { Document, Schema } from "mongoose";
-import { TenantSchema } from "./tenant.model";
+import mongoose, { Document, Schema } from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
+import { TenantSchema } from './tenant.model';
 
 export interface CategorySchema extends Document {
   name: string;
@@ -13,7 +14,7 @@ const categorySchema = new mongoose.Schema<CategorySchema>(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, 'Name is required'],
     },
     available: {
       type: Boolean,
@@ -21,7 +22,7 @@ const categorySchema = new mongoose.Schema<CategorySchema>(
     },
     tenant: {
       type: Schema.Types.ObjectId,
-      ref: "Tenant",
+      ref: 'Tenant',
       required: true,
     },
     description: {
@@ -39,7 +40,7 @@ const categorySchema = new mongoose.Schema<CategorySchema>(
   }
 );
 
-categorySchema.set("toJSON", {
+categorySchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: function (_, ret) {
@@ -47,4 +48,9 @@ categorySchema.set("toJSON", {
   },
 });
 
-export const CategoryModel = mongoose.model("Category", categorySchema);
+categorySchema.plugin(paginate);
+
+export const CategoryModel = mongoose.model<CategorySchema, mongoose.PaginateModel<CategorySchema>>(
+  'Category',
+  categorySchema
+);

@@ -1,18 +1,13 @@
-import { CustomError, handleErrorInstances } from "../utils/errors";
-import { CategoryDTO } from "../models";
-import { CategoryModel, CategorySchema, UserSchema } from "../data";
+import { CustomError, handleErrorInstances } from '../utils/errors';
+import { CategoryDTO, PaginationDto } from '../models';
+import { CategoryModel, CategorySchema, UserSchema } from '../data';
+import { PaginateResult } from 'mongoose';
 
-const getCategory = async (
-  categoryId: string,
-  user: UserSchema
-): Promise<CategorySchema> => {
+const getCategory = async (categoryId: string, user: UserSchema): Promise<CategorySchema> => {
   try {
-    const categoryFound = await CategoryModel.findById(categoryId).where(
-      "tenant",
-      user.tenant.id
-    );
+    const categoryFound = await CategoryModel.findById(categoryId).where('tenant', user.tenant.id);
 
-    if (!categoryFound) throw CustomError.badRequest("La categoria no existe");
+    if (!categoryFound) throw CustomError.badRequest('La categoria no existe');
 
     return categoryFound;
   } catch (error) {
@@ -27,7 +22,7 @@ const addCategory = async (categoryDto: CategoryDTO, user: UserSchema) => {
       tenant: user.tenant.id,
     });
 
-    if (categoryFound) throw CustomError.badRequest("La categoria ya existe");
+    if (categoryFound) throw CustomError.badRequest('La categoria ya existe');
 
     const category = new CategoryModel({
       ...categoryDto,
@@ -54,10 +49,9 @@ const putCategory = async (category: CategoryDTO, user: UserSchema) => {
       {
         new: true,
       }
-    ).where("tenant", user.tenant.id);
+    ).where('tenant', user.tenant.id);
 
-    if (!categoryUpdated)
-      throw CustomError.badRequest("La categoria no existe");
+    if (!categoryUpdated) throw CustomError.badRequest('La categoria no existe');
 
     return categoryUpdated;
   } catch (error) {
@@ -75,10 +69,9 @@ const removeCategory = async (category: CategoryDTO, user: UserSchema) => {
       {
         new: true,
       }
-    ).where("tenant", user.tenant.id);
+    ).where('tenant', user.tenant.id);
 
-    if (!categoryDeleted)
-      throw CustomError.badRequest("La categoria no existe");
+    if (!categoryDeleted) throw CustomError.badRequest('La categoria no existe');
 
     return categoryDeleted;
   } catch (error) {
@@ -86,12 +79,14 @@ const removeCategory = async (category: CategoryDTO, user: UserSchema) => {
   }
 };
 
-const listCategories = async (tenanId: string): Promise<any[]> => {
+const listCategories = async (pagination: PaginationDto, user: UserSchema): Promise<PaginateResult<CategorySchema>> => {
   try {
-    const categories = await CategoryModel.find({
-      tenant: tenanId,
-      available: true,
-    });
+    const options = {
+      page: pagination.page,
+      limit: pagination.limit,
+    };
+
+    const categories = await CategoryModel.paginate({ tenant: user.tenant.id }, options);
 
     return categories;
   } catch (error) {

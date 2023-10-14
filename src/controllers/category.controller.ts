@@ -1,19 +1,19 @@
-import { Request, Response } from "express";
-import { authService, categoryService } from "../services";
-import { handleError } from "../utils/errors";
-import { CategoryDTO } from "../models";
+import { Request, Response } from 'express';
+import { authService, categoryService } from '../services';
+import { handleError } from '../utils/errors';
+import { CategoryDTO, PaginationDto } from '../models';
 
 export const getCategories = async (request: Request, response: Response) => {
-  // const [errors, registerDto] = RegisterDTO.create(request.body);
+  const { page, limit } = request.query;
+  const [errors, paginationDto] = PaginationDto.create(Number(page ?? 1), Number(limit ?? 10));
 
-  // if (errors) {
-  //   return response.status(400).json({ errors });
-  // }
-  // TODO: Implement pagination for categories
+  if (errors) {
+    return response.status(400).json(errors);
+  }
 
   try {
-    const tenantId = request.body.user.tenant.id;
-    const data = await categoryService.listCategories(tenantId);
+    const user = authService.getCurrentUser(request);
+    const data = await categoryService.listCategories(paginationDto!, user);
     return response.json(data);
   } catch (error) {
     return handleError(error, response);
@@ -44,10 +44,7 @@ export const createCategory = async (request: Request, response: Response) => {
   }
 
   try {
-    const data = await categoryService.addCategory(
-      categoryDto,
-      request.body.user
-    );
+    const data = await categoryService.addCategory(categoryDto, request.body.user);
     return response.json(data);
   } catch (error) {
     return handleError(error, response);
