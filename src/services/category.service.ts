@@ -1,4 +1,4 @@
-import { CustomError, handleErrorInstances } from '../utils/errors';
+import { CustomError, ERRORS, handleErrorInstances } from '../utils/errors';
 import { CategoryDTO, PaginationDto } from '../models';
 import { CategoryModel, CategorySchema, UserSchema } from '../data';
 import { PaginateResult } from 'mongoose';
@@ -7,7 +7,7 @@ const getCategory = async (categoryId: string, user: UserSchema): Promise<Catego
   try {
     const categoryFound = await CategoryModel.findById(categoryId).where('tenant', user.tenant.id);
 
-    if (!categoryFound) throw CustomError.badRequest('La categoria no existe');
+    if (!categoryFound) throw CustomError.badRequest(ERRORS.CATEGORY.NOT_FOUND);
 
     return categoryFound;
   } catch (error) {
@@ -22,7 +22,7 @@ const addCategory = async (categoryDto: CategoryDTO, user: UserSchema) => {
       tenant: user.tenant.id,
     });
 
-    if (categoryFound) throw CustomError.badRequest('La categoria ya existe');
+    if (categoryFound) throw CustomError.badRequest(ERRORS.CATEGORY.ALREADY_EXISTS);
 
     const category = new CategoryModel({
       ...categoryDto,
@@ -51,7 +51,7 @@ const putCategory = async (category: CategoryDTO, user: UserSchema) => {
       }
     ).where('tenant', user.tenant.id);
 
-    if (!categoryUpdated) throw CustomError.badRequest('La categoria no existe');
+    if (!categoryUpdated) throw CustomError.badRequest(ERRORS.CATEGORY.NOT_FOUND);
 
     return categoryUpdated;
   } catch (error) {
@@ -71,7 +71,7 @@ const removeCategory = async (category: CategoryDTO, user: UserSchema) => {
       }
     ).where('tenant', user.tenant.id);
 
-    if (!categoryDeleted) throw CustomError.badRequest('La categoria no existe');
+    if (!categoryDeleted) throw CustomError.badRequest(ERRORS.CATEGORY.NOT_FOUND);
 
     return categoryDeleted;
   } catch (error) {
@@ -86,7 +86,7 @@ const listCategories = async (pagination: PaginationDto, user: UserSchema): Prom
       limit: pagination.limit,
     };
 
-    const categories = await CategoryModel.paginate({ tenant: user.tenant.id }, options);
+    const categories = await CategoryModel.paginate({ tenant: user.tenant.id, available: true }, options);
 
     return categories;
   } catch (error) {

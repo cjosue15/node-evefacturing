@@ -44,7 +44,8 @@ export const createCategory = async (request: Request, response: Response) => {
   }
 
   try {
-    const data = await categoryService.addCategory(categoryDto, request.body.user);
+    const user = authService.getCurrentUser(request);
+    const data = await categoryService.addCategory(categoryDto, user);
     return response.json(data);
   } catch (error) {
     return handleError(error, response);
@@ -75,7 +76,7 @@ export const deleteCategory = async (request: Request, response: Response) => {
   // We need to validate with error if first need to delete the product or change of category
 
   if (errors) {
-    return response.status(400).json({ errors });
+    return response.status(400).json(errors);
   }
 
   try {
