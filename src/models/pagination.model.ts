@@ -5,7 +5,6 @@ export class PaginationDto {
   private constructor(public readonly page: number, public readonly limit: number) {}
 
   static create(page: number = 1, limit: number = 10): [string[]?, PaginationDto?] {
-    console.log({ page, limit });
     try {
       z.object({
         page: z.number().min(1, { message: 'La pagina debe ser mayor a 0' }),

@@ -1,5 +1,6 @@
-import { Schema, model } from "mongoose";
-import { TenantSchema } from "./tenant.model";
+import mongoose, { Schema, model } from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
+import { TenantSchema } from './tenant.model';
 
 export interface TagSchema extends Document {
   name: string;
@@ -12,7 +13,7 @@ const tagSchema = new Schema<TagSchema>(
   {
     name: {
       type: String,
-      required: [true, "El nombre es requerido"],
+      required: [true, 'El nombre es requerido'],
     },
     active: {
       type: Boolean,
@@ -20,7 +21,7 @@ const tagSchema = new Schema<TagSchema>(
     },
     tenant: {
       type: Schema.Types.ObjectId,
-      ref: "Tenant",
+      ref: 'Tenant',
       required: true,
     },
     description: {
@@ -33,7 +34,7 @@ const tagSchema = new Schema<TagSchema>(
   }
 );
 
-tagSchema.set("toJSON", {
+tagSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: function (_, ret) {
@@ -41,4 +42,6 @@ tagSchema.set("toJSON", {
   },
 });
 
-export const TagModel = model("Tag", tagSchema);
+tagSchema.plugin(paginate);
+
+export const TagModel = model<TagSchema, mongoose.PaginateModel<TagSchema>>('Tag', tagSchema);
