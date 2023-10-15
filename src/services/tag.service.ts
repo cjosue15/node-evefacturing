@@ -75,7 +75,6 @@ const updateTag = async (category: TagDTO, user: UserSchema) => {
 
 const deleteTag = async (tag: TagDTO, user: UserSchema) => {
   try {
-    console.log(tag);
     const tagDeleted = await TagModel.findByIdAndUpdate(
       tag.id,
       {
